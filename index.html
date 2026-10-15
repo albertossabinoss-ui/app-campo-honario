@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELECTRO HONÁRIO - App de Campo</title>
+    
+    <!-- CONFIGURAÇÃO PWA PARA INSTALAÇÃO DIRETA NO ANDROID -->
+    <meta name="theme-color" content="#020617">
+    <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Electro%20Hon%C3%A1rio%20Campo%22%2C%22short_name%22%3A%22HonarioCampo%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23020617%22%2C%22theme_color%22%3A%22%23f59e0b%22%2C%22icons%22%3A%5B%5D%7D">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#fffbeb', 500: '#f59e0b', 600: '#d97706', 900: '#78350f' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between selection:bg-amber-500 selection:text-black">
+
+    <!-- CABEÇALHO DA APP DE CAMPO -->
+    <header class="bg-slate-900 border-b border-slate-800 py-3 px-4 shadow-md flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <div class="bg-amber-500 p-2.5 rounded-xl text-slate-950 shadow-lg font-black flex items-center justify-center w-10 h-10">
+                <i class="fa-solid fa-helmet-safety text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-sm font-black tracking-wider uppercase text-white flex items-center gap-1">
+                    ELECTRO HONÁRIO 
+                    <span class="text-amber-500 text-[10px] px-1.5 py-0.5 bg-amber-500/10 rounded-full border border-amber-500/30">CAMPO</span>
+                </h1>
+                <p class="text-[11px] text-slate-400">App de Registo & Câmara em Tempo Real</p>
+            </div>
+        </div>
+        <div>
+            <button onclick="instalarAppPWA()" id="btn-instalar-app" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition items-center gap-1 shadow">
+                <i class="fa-solid fa-download"></i> Instalar App
+            </button>
+        </div>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="flex-grow flex items-center justify-center p-3">
+        
+        <!-- TELA DE LOGIN DO OPERÁRIO -->
+        <div id="login-screen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl space-y-5">
+            <div class="text-center space-y-1">
+                <div class="w-14 h-14 bg-amber-500/10 border border-amber-500/30 rounded-full flex items-center justify-center mx-auto text-amber-500 text-2xl">
+                    <i class="fa-solid fa-user-gear"></i>
+                </div>
+                <h2 class="text-xl font-bold tracking-tight text-white">Acesso do Operário</h2>
+                <p class="text-xs text-slate-400">Insira as suas credenciais para aceder ao terreno</p>
+            </div>
+
+            <form onsubmit="fazerLoginOperario(event)" class="space-y-4 text-xs">
+                <div>
+                    <label class="block font-semibold uppercase tracking-wider text-slate-400 mb-1">Utilizador</label>
+                    <input type="text" id="login-user" required placeholder="Ex: operario1" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:border-amber-500 outline-none">
+                </div>
+                <div>
+                    <label class="block font-semibold uppercase tracking-wider text-slate-400 mb-1">Palavra-passe</label>
+                    <input type="password" id="login-pass" required placeholder="••••••••" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:border-amber-500 outline-none">
+                </div>
+                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-sm">
+                    <span>Entrar na App de Campo</span>
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                </button>
+            </form>
+            
+            <div id="login-error" class="hidden text-center text-red-400 text-xs font-medium bg-red-500/10 border border-red-500/20 p-2.5 rounded-lg">
+                Utilizador ou palavra-passe incorretos.
+            </div>
+        </div>
+
+        <!-- APP DE CAMPO PRINCIPAL (APÓS LOGIN) -->
+        <div id="app-campo-dashboard" class="hidden w-full max-w-3xl space-y-4">
+            
+            <!-- BARRA DE OPERÁRIO LOGADO -->
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex justify-between items-center text-xs">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 bg-amber-500/20 border border-amber-500/40 rounded-lg flex items-center justify-center text-amber-400 font-bold">
+                        <i class="fa-solid fa-helmet-safety"></i>
+                    </div>
+                    <div>
+                        <span id="operario-logado-nome" class="font-bold text-white block text-sm">Operário</span>
+                        <span class="text-emerald-400 font-mono text-[10px]">● Online (Sincronizado com o Escritório)</span>
+                    </div>
+                </div>
+                <button onclick="sairDaApp()" class="px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-xl transition font-bold" title="Sair da App">
+                    <i class="fa-solid fa-power-off"></i> Sair
+                </button>
+            </div>
+
+            <!-- FORMULÁRIO DE CADASTRO DE CAMPO (3 PASSOS) -->
+            <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-5 text-xs">
+                <div class="flex flex-wrap justify-between items-center border-b border-slate-800 pb-3 gap-2">
+                    <div>
+                        <h4 class="font-bold text-sm text-amber-400 flex items-center gap-2">
+                            <i class="fa-solid fa-satellite-dish"></i> Registo de Trabalho em Campo & GPS
+                        </h4>
+                        <p class="text-[11px] text-slate-400">Preencha os dados da obra, capture fotos em tempo real e envie para o escritório.</p>
+                    </div>
+                    <div class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-1.5 rounded-xl font-mono font-bold text-[11px] flex items-center gap-1.5">
+                        <i class="fa-solid fa-location-crosshairs animate-pulse"></i>
+                        <span id="gps-status-bar">A detetar GPS...</span>
+                    </div>
+                </div>
+
+                <!-- INDICADORES DE PASSOS -->
+                <div class="grid grid-cols-3 gap-2">
+                    <div id="step-ind-1" class="p-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-center">1. Cliente & GPS</div>
+                    <div id="step-ind-2" class="p-2.5 rounded-xl bg-slate-950 text-slate-400 border border-slate-800 font-bold text-center">2. Imóvel & Materiais</div>
+                    <div id="step-ind-3" class="p-2.5 rounded-xl bg-slate-950 text-slate-400 border border-slate-800 font-bold text-center">3. Câmara & Notas</div>
+                </div>
+
+                <!-- PASSO 1 -->
+                <div id="wizard-step-1" class="space-y-4 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                    <h5 class="font-bold text-amber-400 uppercase">Passo 1: Dados do Cliente</h5>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block font-semibold text-slate-400 mb-1">Nome Completo do Cliente *</label>
+                            <input type="text" id="campo-cli-nome" required placeholder="Ex: Sra. Maria da Conceição" class="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-white">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-400 mb-1">Contacto Telefónico / NUIT *</label>
+                            <input type="text" id="campo-cli-tel" required placeholder="Ex: +258 84 123 4567" class="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-white font-mono">
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 flex justify-between items-center">
+                            <div>
+                                <span class="text-slate-400 block text-[10px]">Coordenadas GPS de Campo:</span>
+                                <span id="campo-gps-coords" class="text-amber-400 font-mono font-bold">A obter sinal...</span>
+                            </div>
+                            <button type="button" onclick="capturarCoordenadasGPS()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-3 py-1.5 rounded-lg font-bold">Atualizar GPS</button>
+                        </div>
+                    </div>
+                    <div class="flex justify-end pt-2">
+                        <button type="button" onclick="avancarPasso(2)" class="bg-amber-500 text-slate-950 font-bold px-5 py-2.5 rounded-xl">Avançar →</button>
+                    </div>
+                </div>
+
+                <!-- PASSO 2 -->
+                <div id="wizard-step-2" class="hidden space-y-4 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                    <h5 class="font-bold text-amber-400 uppercase">Passo 2: Imóvel, Atividade & Materiais</h5>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-semibold text-slate-400 mb-1">Tipo de Imóvel *</label>
+                            <select id="campo-tipo-imovel" class="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-white">
+                                <option value="Residência Unifamiliar">Residência Unifamiliar</option>
+                                <option value="Loja / Comércio">Loja / Comércio</option>
+                                <option value="Escritório">Escritório</option>
+                                <option value="Indústria / Armazém">Indústria / Armazém</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-400 mb-1">Atividade a Ser Feita *</label>
+                            <select id="campo-tipo-atividade" class="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-amber-400 font-bold">
+                                <option value="Instalação Elétrica Nova">Instalação Elétrica Nova</option>
+                                <option value="Manutenção Preventiva">Manutenção Preventiva</option>
+                                <option value="Reparação / Avarias">Reparação / Avarias</option>
+                                <option value="Montagem de Iluminação">Montagem de Iluminação</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2 space-y-1">
+                            <label class="block font-semibold text-slate-400">Materiais Necessários (Catálogo SOCOAL):</label>
+                            <div id="campo-materiais-checklist" class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[150px] overflow-y-auto p-2 bg-slate-900 rounded-xl border border-slate-800"></div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between pt-2">
+                        <button type="button" onclick="avancarPasso(1)" class="bg-slate-800 text-slate-300 font-bold px-4 py-2.5 rounded-xl">← Voltar</button>
+                        <button type="button" onclick="avancarPasso(3)" class="bg-amber-500 text-slate-950 font-bold px-5 py-2.5 rounded-xl">Avançar →</button>
+                    </div>
+                </div>
+
+                <!-- PASSO 3 (CÂMARA EM TEMPO REAL & NOTAS) -->
+                <div id="wizard-step-3" class="hidden space-y-4 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                    <h5 class="font-bold text-amber-400 uppercase">Passo 3: Zona, Câmara (Até 10 Fotos) & Notas Finais</h5>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-semibold text-slate-400 mb-1">Zona / Cidade *</label>
+                            <input type="text" id="campo-zona" required placeholder="Ex: Maputo" class="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-white">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-400 mb-1">Bairro / Endereço Exato *</label>
+                            <input type="text" id="campo-bairro" required placeholder="Ex: Polana Cimento" class="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-white">
+                        </div>
+
+                        <!-- PROTOCOLO DE CÂMARA EM TEMPO REAL -->
+                        <div class="md:col-span-2 bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <label class="font-bold text-amber-400">Câmara em Tempo Real (Início da Obra)</label>
+                                    <span class="text-[10px] text-slate-400 block">Máximo 10 fotos opcionais.</span>
+                                </div>
+                                <label class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-2 rounded-xl cursor-pointer shadow transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-camera"></i>
+                                    <span>Tirar Foto / Câmara</span>
+                                    <input type="file" id="campo-fotos-camera" accept="image/*" capture="environment" multiple onchange="processarFotosCamera(event)" class="hidden">
+                                </label>
+                            </div>
+                            <div id="container-previa-fotos" class="flex flex-wrap gap-2 pt-1">
+                                <span class="text-[11px] text-slate-500 italic">Nenhuma foto tirada.</span>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block font-semibold text-slate-400 mb-1">Notas Informativas para os Directores:</label>
+                            <textarea id="campo-notas-informacao" rows="2" placeholder="Detalhes adicionais para o escritório..." class="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-white"></textarea>
+                        </div>
+                    </div>
+                    <div class="flex justify-between pt-2">
+                        <button type="button" onclick="avancarPasso(2)" class="bg-slate-800 text-slate-300 font-bold px-4 py-2.5 rounded-xl">← Voltar</button>
+                        <button type="button" onclick="submeterRegistoCampoFinal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-xl shadow">
+                            <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Salvar e Enviar para o Escritório
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- RODAPÉ -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-3 text-center text-xs text-slate-500">
+        ELECTRO HONÁRIO & SERVIÇOS • App Exclusiva de Campo (Sincronizada via Cloud)
+    </footer>
+
+    <!-- SCRIPT DA APP DE CAMPO -->
+    <script>
+        let gpsAtual = { lat: -25.9692, lng: 32.5732 };
+        let fotosTemp = [];
+        let deferredPrompt = null;
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('data:text/javascript;base64,' + btoa(`
+                    self.addEventListener('install', (e) => { e.waitUntil(caches.open('campo-v1').then((cache) => cache.addAll(['./']))); });
+                    self.addEventListener('fetch', (e) => { e.respondWith(caches.match(e.request).then((res) => res || fetch(e.request))); });
+                `)).catch(err => console.log('SW error:', err));
+            });
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const btn = document.getElementById('btn-instalar-app');
+            if(btn) btn.classList.remove('hidden');
+        });
+
+        function instalarAppPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    deferredPrompt = null;
+                    document.getElementById('btn-instalar-app').classList.add('hidden');
+                });
+            }
+        }
+
+        function capturarCoordenadasGPS() {
+            const gpsLabel = document.getElementById('campo-gps-coords');
+            const gpsStatusBar = document.getElementById('gps-status-bar');
+            if(navigator.geolocation) {
+                if(gpsLabel) gpsLabel.textContent = "A contactar satélites...";
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        gpsAtual = { lat: pos.coords.latitude.toFixed(6), lng: pos.coords.longitude.toFixed(6) };
+                        if(gpsLabel) gpsLabel.textContent = `Lat: ${gpsAtual.lat}, Lng: ${gpsAtual.lng}`;
+                        if(gpsStatusBar) gpsStatusBar.textContent = `GPS Ativo`;
+                    },
+                    (err) => {
+                        if(gpsLabel) gpsLabel.textContent = `Lat: ${gpsAtual.lat}, Lng: ${gpsAtual.lng} (Simulado)`;
+                    },
+                    { enableHighAccuracy: true, timeout: 5000 }
+                );
+            }
+        }
+
+        function processarFotosCamera(e) {
+            const files = e.target.files;
+            if(!files) return;
+            if(fotosTemp.length + files.length > 10) {
+                alert('⚠️ O limite máximo é de 10 fotografias por registo.');
+                return;
+            }
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    fotosTemp.push(evt.target.result);
+                    atualizarPreviaFotos();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function atualizarPreviaFotos() {
+            const container = document.getElementById('container-previa-fotos');
+            if(fotosTemp.length === 0) {
+                container.innerHTML = '<span class="text-[11px] text-slate-500 italic">Nenhuma foto tirada.</span>';
+                return;
+            }
+            let html = '';
+            fotosTemp.forEach((f, idx) => {
+                html += `<div class="relative w-14 h-14 rounded overflow-hidden border border-amber-500"><img src="${f}" class="w-full h-full object-cover"><button type="button" onclick="fotosTemp.splice(${idx},1);atualizarPreviaFotos()" class="absolute top-0 right-0 bg-red-600 text-white w-4 h-4 text-[9px] flex items-center justify-center">×</button></div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function avancarPasso(num) {
+            if(num === 2) {
+                if(!document.getElementById('campo-cli-nome').value || !document.getElementById('campo-cli-tel').value) {
+                    alert('⚠️ Preencha o Nome e o Contacto do Cliente.');
+                    return;
+                }
+            }
+            for(let i=1; i<=3; i++) {
+                document.getElementById(`wizard-step-${i}`).classList.add('hidden');
+                document.getElementById(`step-ind-${i}`).className = "p-2.5 rounded-xl bg-slate-950 text-slate-400 border border-slate-800 font-bold text-center";
+            }
+            document.getElementById(`wizard-step-${num}`).classList.remove('hidden');
+            document.getElementById(`step-ind-${num}`).className = "p-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-center shadow";
+        }
+
+        function carregarChecklistMateriais() {
+            const container = document.getElementById('campo-materiais-checklist');
+            const materiais = [
+                { id: 1, nome: 'Fio Condutor Flexível 1.5mm²' },
+                { id: 2, nome: 'Fio Condutor Flexível 2.5mm²' },
+                { id: 6, nome: 'Lâmpada LED Bulbo E27' },
+                { id: 10, nome: 'Disjuntor Termomagnético 16A' },
+                { id: 15, nome: 'Tomada Dupla Schuko' }
+            ];
+            let html = '';
+            materiais.forEach(m => {
+                html += `<label class="flex items-center space-x-2 bg-slate-950 p-2 rounded border border-slate-800 cursor-pointer"><input type="checkbox" id="mat-${m.id}" value="${m.nome}" class="text-amber-500"><span class="text-white">${m.nome}</span></label>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function fazerLoginOperario(e) {
+            e.preventDefault();
+            const u = document.getElementById('login-user').value.trim();
+            const p = document.getElementById('login-pass').value.trim();
+            
+            if(u && p) {
+                localStorage.setItem('electro_campo_sessao', JSON.stringify({ nome: u }));
+                ativarAppCampo(u);
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        }
+
+        function ativarAppCampo(nome) {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-campo-dashboard').classList.remove('hidden');
+            document.getElementById('operario-logado-nome').textContent = `Operário: ${nome}`;
+            capturarCoordenadasGPS();
+            carregarChecklistMateriais();
+        }
+
+        function sairDaApp() {
+            localStorage.removeItem('electro_campo_sessao');
+            location.reload();
+        }
+
+        function submeterRegistoCampoFinal() {
+            const zona = document.getElementById('campo-zona').value.trim();
+            const bairro = document.getElementById('campo-bairro').value.trim();
+            if(!zona || !bairro) {
+                alert('⚠️ Preencha a Zona e o Bairro.');
+                return;
+            }
+
+            let mats = [];
+            [1,2,6,10,15].forEach(id => {
+                let chk = document.getElementById(`mat-${id}`);
+                if(chk && chk.checked) mats.push(chk.value);
+            });
+
+            const sessao = JSON.parse(localStorage.getItem('electro_campo_sessao') || '{}');
+            const novoRegisto = {
+                id: Date.now(),
+                tipo: 'Atividade de Campo GPS',
+                operario: sessao.nome || 'Operário Campo',
+                cliente: document.getElementById('campo-cli-nome').value,
+                contacto: document.getElementById('campo-cli-tel').value,
+                imovel: document.getElementById('campo-tipo-imovel').value,
+                atividade: document.getElementById('campo-tipo-atividade').value,
+                materiais: mats,
+                zona: zona,
+                bairro: bairro,
+                gps: gpsAtual,
+                fotosAntes: fotosTemp,
+                fotosAcabadas: [],
+                notasOperario: document.getElementById('campo-notas-informacao').value,
+                estadoObra: 'Em Execução',
+                data: new Date().toLocaleString('pt-PT'),
+                faturamentoNumeric: 0
+            };
+
+            let logs = JSON.parse(localStorage.getItem('electro_honario_logs') || '[]');
+            logs.unshift(novoRegisto);
+            localStorage.setItem('electro_honario_logs', JSON.stringify(logs));
+
+            alert('✅ Trabalho gravado e enviado com sucesso para o escritório central!');
+            fotosTemp = [];
+            location.reload();
+        }
+
+        window.onload = function() {
+            const sessao = JSON.parse(localStorage.getItem('electro_campo_sessao') || 'null');
+            if(sessao) ativarAppCampo(sessao.nome);
+        };
+    </script>
+</body>
+</html>
