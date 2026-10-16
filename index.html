@@ -37,12 +37,12 @@
                     ELECTRO HONÁRIO 
                     <span class="text-amber-500 text-[10px] px-1.5 py-0.5 bg-amber-500/10 rounded-full border border-amber-500/30">CAMPO</span>
                 </h1>
-                <p class="text-[11px] text-slate-400">App de Registo & Câmara em Tempo Real</p>
+                <p class="text-[11px] text-slate-400">App de Registo & Sincronização Cloud</p>
             </div>
         </div>
-        <div>
+        <div class="flex items-center gap-2">
             <button onclick="instalarAppPWA()" id="btn-instalar-app" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition items-center gap-1 shadow">
-                <i class="fa-solid fa-download"></i> Instalar App
+                <i class="fa-solid fa-download"></i> Instalar
             </button>
         </div>
     </header>
@@ -83,30 +83,34 @@
         <!-- APP DE CAMPO PRINCIPAL (APÓS LOGIN) -->
         <div id="app-campo-dashboard" class="hidden w-full max-w-3xl space-y-4">
             
-            <!-- BARRA DE OPERÁRIO LOGADO -->
-            <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex justify-between items-center text-xs">
+            <!-- BARRA DE OPERÁRIO LOGADO & ABAS DO TÉCNICO -->
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex flex-wrap justify-between items-center gap-3 text-xs">
                 <div class="flex items-center space-x-3">
                     <div class="w-9 h-9 bg-amber-500/20 border border-amber-500/40 rounded-lg flex items-center justify-center text-amber-400 font-bold">
                         <i class="fa-solid fa-helmet-safety"></i>
                     </div>
                     <div>
                         <span id="operario-logado-nome" class="font-bold text-white block text-sm">Operário</span>
-                        <span class="text-emerald-400 font-mono text-[10px]">● Online (Sincronizado com o Escritório)</span>
+                        <span class="text-emerald-400 font-mono text-[10px]">● Sincronizado com a Base Mãe (Escritório)</span>
                     </div>
                 </div>
-                <button onclick="sairDaApp()" class="px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-xl transition font-bold" title="Sair da App">
-                    <i class="fa-solid fa-power-off"></i> Sair
-                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="mudarAbaTecnico('novo')" id="btn-tab-novo" class="px-3 py-2 bg-amber-500 text-slate-950 font-bold rounded-xl transition shadow">Novo Registo</button>
+                    <button onclick="mudarAbaTecnico('relatorio')" id="btn-tab-relatorio" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl transition">Meus Relatórios</button>
+                    <button onclick="sairDaApp()" class="px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-xl transition font-bold" title="Sair da App">
+                        <i class="fa-solid fa-power-off"></i>
+                    </button>
+                </div>
             </div>
 
-            <!-- FORMULÁRIO DE CADASTRO DE CAMPO (3 PASSOS) -->
-            <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-5 text-xs">
+            <!-- SEÇÃO 1: FORMULÁRIO DE NOVO REGISTO (3 PASSOS) -->
+            <div id="secao-novo-registo" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-5 text-xs">
                 <div class="flex flex-wrap justify-between items-center border-b border-slate-800 pb-3 gap-2">
                     <div>
                         <h4 class="font-bold text-sm text-amber-400 flex items-center gap-2">
-                            <i class="fa-solid fa-satellite-dish"></i> Registo de Trabalho em Campo & GPS
+                            <i class="fa-solid fa-satellite-dish"></i> Novo Registo de Trabalho em Campo & GPS
                         </h4>
-                        <p class="text-[11px] text-slate-400">Preencha os dados da obra, capture fotos em tempo real e envie para o escritório.</p>
+                        <p class="text-[11px] text-slate-400">Preencha os dados da obra, adicione materiais e envie diretamente para o escritório.</p>
                     </div>
                     <div class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-1.5 rounded-xl font-mono font-bold text-[11px] flex items-center gap-1.5">
                         <i class="fa-solid fa-location-crosshairs animate-pulse"></i>
@@ -168,9 +172,15 @@
                                 <option value="Montagem de Iluminação">Montagem de Iluminação</option>
                             </select>
                         </div>
-                        <div class="md:col-span-2 space-y-1">
+                        <div class="md:col-span-2 space-y-2">
                             <label class="block font-semibold text-slate-400">Materiais Necessários (Catálogo SOCOAL):</label>
-                            <div id="campo-materiais-checklist" class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[150px] overflow-y-auto p-2 bg-slate-900 rounded-xl border border-slate-800"></div>
+                            <div id="campo-materiais-checklist" class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[140px] overflow-y-auto p-2 bg-slate-900 rounded-xl border border-slate-800"></div>
+                            
+                            <!-- CAMPO PARA O TÉCNICO ESCREVER MATERIAIS EXTRA QUE NÃO ESTÃO NO SISTEMA -->
+                            <div class="pt-1">
+                                <label class="block font-semibold text-amber-400 mb-1">Outros Materiais (Escreva materiais extras que não estão no sistema):</label>
+                                <input type="text" id="campo-materiais-extras" placeholder="Ex: Cabo especial XRU, fita isolante grossa, abraçadeiras extra..." class="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-white">
+                            </div>
                         </div>
                     </div>
                     <div class="flex justify-between pt-2">
@@ -224,12 +234,29 @@
                 </div>
 
             </div>
+
+            <!-- SEÇÃO 2: RELATÓRIO INDIVIDUAL DO TÉCNICO -->
+            <div id="secao-meu-relatorio" class="hidden bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4 text-xs">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <div>
+                        <h4 class="font-bold text-sm text-amber-400 flex items-center gap-2">
+                            <i class="fa-solid fa-file-lines"></i> Meus Relatórios & Atividades Enviadas
+                        </h4>
+                        <p class="text-[11px] text-slate-400">Histórico de todas as obras e registos realizados por si no terreno.</p>
+                    </div>
+                    <button onclick="carregarMeuRelatorioTecnico()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-3 py-1.5 rounded-xl font-bold">
+                        <i class="fa-solid fa-rotate mr-1"></i> Atualizar
+                    </button>
+                </div>
+                <div id="lista-meu-relatorio" class="space-y-3 max-h-[450px] overflow-y-auto pr-1"></div>
+            </div>
+
         </div>
     </main>
 
     <!-- RODAPÉ -->
     <footer class="bg-slate-900 border-t border-slate-800 py-3 text-center text-xs text-slate-500">
-        ELECTRO HONÁRIO & SERVIÇOS • App Exclusiva de Campo (Sincronizada via Cloud)
+        ELECTRO HONÁRIO & SERVIÇOS • App Exclusiva de Campo (Sincronizada via Cloud com a Base Mãe)
     </footer>
 
     <!-- SCRIPT DA APP DE CAMPO -->
@@ -237,6 +264,7 @@
         let gpsAtual = { lat: -25.9692, lng: 32.5732 };
         let fotosTemp = [];
         let deferredPrompt = null;
+        let operarioAtivoNome = '';
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -350,6 +378,7 @@
             const p = document.getElementById('login-pass').value.trim();
             
             if(u && p) {
+                operarioAtivoNome = u;
                 localStorage.setItem('electro_campo_sessao', JSON.stringify({ nome: u }));
                 ativarAppCampo(u);
             } else {
@@ -358,9 +387,10 @@
         }
 
         function ativarAppCampo(nome) {
+            operarioAtivoNome = nome;
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('app-campo-dashboard').classList.remove('hidden');
-            document.getElementById('operario-logado-nome').textContent = `Operário: ${nome}`;
+            document.getElementById('operario-logado-nome').textContent = `Técnico: ${nome}`;
             capturarCoordenadasGPS();
             carregarChecklistMateriais();
         }
@@ -368,6 +398,55 @@
         function sairDaApp() {
             localStorage.removeItem('electro_campo_sessao');
             location.reload();
+        }
+
+        function mudarAbaTecnico(aba) {
+            if(aba === 'novo') {
+                document.getElementById('secao-novo-registo').classList.remove('hidden');
+                document.getElementById('secao-meu-relatorio').classList.add('hidden');
+                document.getElementById('btn-tab-novo').className = "px-3 py-2 bg-amber-500 text-slate-950 font-bold rounded-xl transition shadow";
+                document.getElementById('btn-tab-relatorio').className = "px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl transition";
+            } else {
+                document.getElementById('secao-novo-registo').classList.add('hidden');
+                document.getElementById('secao-meu-relatorio').classList.remove('hidden');
+                document.getElementById('btn-tab-relatorio').className = "px-3 py-2 bg-amber-500 text-slate-950 font-bold rounded-xl transition shadow";
+                document.getElementById('btn-tab-novo').className = "px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl transition";
+                carregarMeuRelatorioTecnico();
+            }
+        }
+
+        function carregarMeuRelatorioTecnico() {
+            const container = document.getElementById('lista-meu-relatorio');
+            let logs = JSON.parse(localStorage.getItem('electro_honario_logs') || '[]');
+            
+            // Filtra apenas as atividades deste técnico conectado
+            let meusLogs = logs.filter(l => l.tipo === 'Atividade de Campo GPS' && (l.operario.toLowerCase().includes(operarioAtivoNome.toLowerCase())));
+
+            if(meusLogs.length === 0) {
+                container.innerHTML = '<div class="bg-slate-950 p-6 rounded-xl border border-slate-800 text-center text-slate-500">Ainda não registou nenhuma atividade no terreno.</div>';
+                return;
+            }
+
+            let html = '';
+            meusLogs.forEach(l => {
+                let estadoBadge = l.estadoObra === 'Concluído' ? '<span class="text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded font-bold">Concluído</span>' : '<span class="text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded font-bold">Em Execução</span>';
+                html += `
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <span class="font-bold text-amber-400">${l.atividade}</span>
+                            <span>${estadoBadge}</span>
+                        </div>
+                        <div class="text-slate-300 grid grid-cols-1 md:grid-cols-2 gap-1">
+                            <div><strong>Cliente:</strong> ${l.cliente} (${l.contacto})</div>
+                            <div><strong>Local:</strong> ${l.zona}, ${l.bairro}</div>
+                            <div class="md:col-span-2"><strong>Materiais:</strong> ${l.materiais.join(', ')} ${l.materiaisExtras ? ' | Extras: ' + l.materiaisExtras : ''}</div>
+                            <div class="md:col-span-2"><strong>Notas:</strong> ${l.notasOperario || 'Nenhuma nota'}</div>
+                        </div>
+                        <div class="text-[10px] text-slate-500 text-right pt-1">Data: ${l.data}</div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
         }
 
         function submeterRegistoCampoFinal() {
@@ -384,16 +463,18 @@
                 if(chk && chk.checked) mats.push(chk.value);
             });
 
-            const sessao = JSON.parse(localStorage.getItem('electro_campo_sessao') || '{}');
+            const materiaisExtras = document.getElementById('campo-materiais-extras').value.trim();
+
             const novoRegisto = {
                 id: Date.now(),
                 tipo: 'Atividade de Campo GPS',
-                operario: sessao.nome || 'Operário Campo',
+                operario: operarioAtivoNome || 'Técnico Campo',
                 cliente: document.getElementById('campo-cli-nome').value,
                 contacto: document.getElementById('campo-cli-tel').value,
                 imovel: document.getElementById('campo-tipo-imovel').value,
                 atividade: document.getElementById('campo-tipo-atividade').value,
                 materiais: mats,
+                materiaisExtras: materiaisExtras,
                 zona: zona,
                 bairro: bairro,
                 gps: gpsAtual,
@@ -405,13 +486,15 @@
                 faturamentoNumeric: 0
             };
 
+            // Salva diretamente na base mãe global sincronizada com o escritório
             let logs = JSON.parse(localStorage.getItem('electro_honario_logs') || '[]');
             logs.unshift(novoRegisto);
             localStorage.setItem('electro_honario_logs', JSON.stringify(logs));
 
-            alert('✅ Trabalho gravado e enviado com sucesso para o escritório central!');
+            alert('✅ Trabalho gravado e sincronizado com sucesso para o escritório central!');
             fotosTemp = [];
-            location.reload();
+            document.getElementById('campo-materiais-extras').value = '';
+            mudarAbaTecnico('relatorio');
         }
 
         window.onload = function() {
